@@ -1,5 +1,11 @@
 import { Request, Response } from 'express'
-import { isValidTodo, loadTodos, saveTodos } from './utils'
+import {
+  deleteTodo,
+  isValidTodo,
+  loadTodos,
+  saveTodos,
+  updateTodo
+} from './utils'
 
 // require dependencies so they can be used throughout this code
 const express = require('express')
@@ -34,32 +40,34 @@ app.post('/todos', async (req: Request, res: Response) => {
   }
 })
 
-// PUT endpiont to update an existing todo item with the specified `id`
-// provide updated `title` and/or `completed` in the request body as JSON
-/* app.put('/todos/:id', (req, res) => {
-  const id = parseInt(req.params.id)
-  const todo = todos.find((t) => t.id === id)
-  if (!todo) {
-    return res.status(404).json({ error: 'Todo not found' })
-  }
-  todo.title = req.body.title || todo.title
-  todo.completed = req.body.completed || todo.completed
-  res.json(todo)
-}) */
-
 // DELETE endpoint to remove an existing todo item with the specified `id`
-/* app.delete('/todos/:id', (req, res) => {
-  const id = parseInt(req.params.id)
-  const index = todos.findIndex((t) => t.id === id)
-  if (index === -1) {
-    return res.status(404).json({ error: 'Todo not found' })
+app.delete('/todos/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id
+    await deleteTodo(id)
+    res.status(204).send()
+  } catch (e) {
+    console.log(e)
+    res.status(500).json({ error: 'Failed to delete todo' })
   }
-  todos.splice(index, 1)
-  res.status(204).send()
-}) */
+})
 
-// run the server on port 3000
-// for example the app can run locally at this URL: http://localhost:3000
+// PUT endpiont to update an existing todo item with the specified `id`
+app.put('/todos/:id', async (req: Request, res: Response) => {
+  try {
+    if (!req.body || !isValidTodo(req.body)) {
+      return res.status(400).json({ error: 'Invalid todo structure' })
+    }
+    const id = req.params.id
+
+    await updateTodo(id, req.body)
+    res.status(201).json({ message: 'Todo updated' })
+  } catch (e) {
+    console.log(e)
+    res.status(500).json({ error: 'Failed to update todo' })
+  }
+})
+
 const PORT = 3000
 
 app.listen(PORT, () => {
