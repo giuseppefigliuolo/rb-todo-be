@@ -29,7 +29,7 @@ export const saveTodos = async (todo: ITodo) => {
       }
 
       try {
-        const jsonArray: ITodo[] = JSON.parse(data)
+        let jsonArray: ITodo[] = data ? JSON.parse(data) : []
 
         jsonArray.push(todo)
 
